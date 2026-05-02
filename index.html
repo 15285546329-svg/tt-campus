@@ -1,0 +1,829 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>TT - XJTLU校园拼团</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<!-- 登录页面 -->
+<div id="login-page">
+    <div class="login-container">
+        <div class="login-logo">
+            <div class="logo-icon">TT</div>
+            <div class="login-subtitle">Social Commerce</div>
+        </div>
+        <div class="login-form">
+            <div class="login-mode-switch">
+                <button class="login-mode-tab active" id="login-mode-student" onclick="switchLoginMode('student')" data-i18n="campusAccountLogin">Campus Account</button>
+                <button class="login-mode-tab" id="login-mode-phone" onclick="switchLoginMode('phone')" data-i18n="phoneLogin">Phone Login</button>
+                <button class="login-mode-tab" id="login-mode-email" onclick="switchLoginMode('email')" data-i18n="emailLogin">Email Login</button>
+            </div>
+
+            <div id="student-login-panel" class="login-panel active">
+                <div class="form-group">
+                    <label class="form-label" data-i18n="studentId">Student ID</label>
+                    <input type="text" id="student-id" placeholder="e.g. 2100000" class="form-input" value="201234567">
+                </div>
+                <div class="form-group">
+                    <label class="form-label" data-i18n="password">Password</label>
+                    <input type="password" id="password" placeholder="••••••••" class="form-input" value="123456">
+                </div>
+            </div>
+
+            <div id="phone-login-panel" class="login-panel">
+                <div class="form-group">
+                    <label class="form-label" data-i18n="phoneNumber">Phone Number</label>
+                    <input type="tel" id="login-phone" placeholder="e.g. 13800138000" class="form-input" value="13800138000">
+                </div>
+                <div class="form-group">
+                    <label class="form-label" data-i18n="verificationCode">Verification Code</label>
+                    <div class="inline-input-group">
+                        <input type="text" id="login-code" placeholder="123456" class="form-input" maxlength="6">
+                        <button class="btn-send-code" id="send-code-btn" onclick="sendPhoneCode()" data-i18n="sendCode">Send Code</button>
+                    </div>
+                </div>
+                <div class="login-tip" id="sms-tip" data-i18n="phoneLoginHint">Use your campus-linked mobile number to receive a one-time code.</div>
+            </div>
+
+            <div id="email-login-panel" class="login-panel">
+                <div class="form-group">
+                    <label class="form-label" data-i18n="displayName">Display Name</label>
+                    <input type="text" id="email-name" placeholder="Alex Chen" class="form-input" value="Alex Chen">
+                </div>
+                <div class="form-group">
+                    <label class="form-label" data-i18n="email">Email</label>
+                    <input type="email" id="login-email" placeholder="name@example.com" class="form-input">
+                </div>
+                <div class="form-group">
+                    <label class="form-label" data-i18n="emailVerificationCode">Email Verification Code</label>
+                    <div class="inline-input-group">
+                        <input type="text" id="email-code" placeholder="123456" class="form-input" maxlength="6">
+                        <button class="btn-send-code" id="send-email-code-btn" onclick="sendEmailOtp()" data-i18n="sendEmailCode">Send Email</button>
+                    </div>
+                </div>
+                <div class="login-tip" id="email-tip" data-i18n="emailLoginHint">Send an Appwrite 6-digit email code, then enter it here to sign in.</div>
+            </div>
+
+            <button class="btn-login" id="login-submit-btn" onclick="handleLogin()" data-i18n="xjtluLogin">XJTLU Student Login</button>
+            <div class="login-links">
+                <a href="#" data-i18n="forgotPassword">Forgot Password</a>
+                <a href="#" onclick="handleEmailSignup(); return false;" data-i18n="signUp">Sign Up</a>
+            </div>
+        </div>
+        <div class="login-avatars">
+            <div class="avatar-stack">&#128100;</div>
+            <div class="avatar-stack">&#128100;</div>
+            <div class="avatar-stack">&#128100;</div>
+            <div class="avatar-stack">+12k</div>
+        </div>
+        <p class="login-tagline" data-i18n="joinCommunity">Join the largest student group-buy community</p>
+    </div>
+</div>
+
+<!-- 主应用 -->
+<div id="main-app" style="display:none;">
+    <div id="view-container">
+        <!-- 首页 -->
+        <div id="view-home" class="view active">
+            <div class="header">
+                <div class="header-top">
+                    <div class="header-logo">TT</div>
+                    <div class="header-icons">
+                        <span class="header-icon">&#128276;</span>
+                    </div>
+                </div>
+                <div class="search-bar">
+                    <span class="search-icon">&#128269;</span>
+                    <input type="text" data-i18n-placeholder="searchPlaceholder" placeholder="Search Textbooks, Sam's, Fruit..." class="search-input">
+                </div>
+            </div>
+            
+            <div class="category-scroll">
+                <div class="category-item" onclick="openCategory('snacks')">
+                    <div class="cat-icon">&#127850;</div>
+                    <span data-i18n="catSnacks">Snacks</span>
+                </div>
+                <div class="category-item" onclick="openCategory('fresh')">
+                    <div class="cat-icon">&#127817;</div>
+                    <span data-i18n="catFresh">Fresh</span>
+                </div>
+                <div class="category-item" onclick="openCategory('books')">
+                    <div class="cat-icon">&#128218;</div>
+                    <span data-i18n="catTextbooks">Textbooks</span>
+                </div>
+                <div class="category-item" onclick="openCategory('service')">
+                    <div class="cat-icon">&#128736;</div>
+                    <span data-i18n="catCampus">Campus</span>
+                </div>
+                <div class="category-item" onclick="openCategory('secondhand')">
+                    <div class="cat-icon">&#9851;</div>
+                    <span data-i18n="catSecondhand">Secondhand</span>
+                </div>
+            </div>
+
+            <div class="section-title">
+                <h3 data-i18n="hotDeals">Today's Hot Deals</h3>
+                <a href="#" class="view-more" data-i18n="seeAll">SEE ALL</a>
+            </div>
+
+            <div class="hot-groups" id="home-hot-groups"></div>
+
+            <div class="section-title">
+                <h3 data-i18n="nearbyCaptains">Nearby Captains</h3>
+            </div>
+
+            <div class="nearby-groups" id="home-nearby-groups"></div>
+
+            <div class="bottom-spacer"></div>
+        </div>
+
+        <!-- 分类详情页 -->
+        <div id="view-category" class="view">
+            <div class="sub-header">
+                <button class="back-btn" onclick="goBack()">&#8592;</button>
+                <span class="sub-title" id="category-title">Category</span>
+                <span></span>
+            </div>
+            <div class="category-content" id="category-content"></div>
+        </div>
+
+        <!-- 拼团详情页 -->
+        <div id="view-detail" class="view">
+            <div class="sub-header">
+                <button class="back-btn" onclick="goBack()">&#8592;</button>
+                <span class="sub-title" data-i18n="productDetails">Product Details</span>
+                <button class="share-btn" onclick="alert('Link copied!')">&#128228;</button>
+            </div>
+            <div class="detail-content" id="detail-content"></div>
+            <div class="bottom-action">
+                <button class="btn-chat" onclick="alert('Chat opened')">&#128172;</button>
+                <button class="btn-join-bottom" id="btn-join-bottom" onclick="joinCurrentGroup()">Join Now</button>
+            </div>
+        </div>
+
+        <!-- 发起拼团页 -->
+        <div id="view-create" class="view">
+            <div class="sub-header">
+                <button class="back-btn" onclick="goBack()">&#8592;</button>
+                <span class="sub-title" data-i18n="initiateGroupBuy">Initiate Group Buy</span>
+                <span></span>
+            </div>
+            <div class="create-content">
+                <div class="create-header-text">
+                    <h2 data-i18n="initiateGroupBuy">Initiate Group Buy</h2>
+                    <p data-i18n="initiateDesc">Let's set up your collective order for XJTLU community.</p>
+                </div>
+                
+                <div class="step-indicator">
+                    <div class="step-dot active" id="step1-dot"></div>
+                    <div class="step-dot" id="step2-dot"></div>
+                    <div class="step-dot" id="step3-dot"></div>
+                </div>
+
+                <div class="create-step active" id="create-step1">
+                    <div class="step-title" data-i18n="step1Select">Step 1: Select Category</div>
+                    <div class="template-grid">
+                        <div class="template-card" onclick="selectTemplate('snacks', this)">
+                            <div class="template-icon">&#127860;</div>
+                            <span data-i18n="foodDrinks">Food & Drinks</span>
+                        </div>
+                        <div class="template-card" onclick="selectTemplate('books', this)">
+                            <div class="template-icon">&#128218;</div>
+                            <span data-i18n="textbooks">Textbooks</span>
+                        </div>
+                        <div class="template-card" onclick="selectTemplate('daily', this)">
+                            <div class="template-icon">&#128722;</div>
+                            <span data-i18n="grocery">Grocery</span>
+                        </div>
+                        <div class="template-card" onclick="selectTemplate('fresh', this)">
+                            <div class="template-icon">&#127823;</div>
+                            <span data-i18n="others">Others</span>
+                        </div>
+                    </div>
+                    <div class="step-title" style="margin-top: 24px;" data-i18n="orCustom">Or Custom Input</div>
+                    <div class="form-group-create">
+                        <input type="text" id="custom-product" data-i18n-placeholder="enterProduct" placeholder="Enter product name" class="form-input-create">
+                    </div>
+                    <div class="upload-area" onclick="document.getElementById('file-upload').click()">
+                        <div class="upload-icon">&#128247;</div>
+                        <span data-i18n="addPhoto">ADD PRODUCT PHOTO</span>
+                        <input type="file" id="file-upload" accept="image/*" hidden>
+                    </div>
+                    <button class="btn-publish" onclick="nextStep(2)" data-i18n="next">NEXT</button>
+                </div>
+
+                <div class="create-step" id="create-step2">
+                    <div class="step-title" data-i18n="step2Logistics">Step 2: Logistics</div>
+                    <div class="form-group-create">
+                        <label data-i18n="expectedPrice">Expected Price (Per Person)</label>
+                        <div style="display:flex;align-items:center;gap:8px;">
+                            <span style="font-size:20px;font-weight:700;">¥</span>
+                            <input type="number" id="group-price" placeholder="0.00" class="form-input-create" style="flex:1;">
+                        </div>
+                    </div>
+                    <div class="form-group-create">
+                        <label data-i18n="originalPrice">Original Price</label>
+                        <input type="number" id="original-price" placeholder="0.00" class="form-input-create">
+                    </div>
+                    <div class="form-group-create">
+                        <label data-i18n="memberLimit">Member Limit</label>
+                        <div class="number-selector">
+                            <button onclick="adjustNumber('group-count', -1)">-</button>
+                            <input type="number" id="group-count" value="4" min="2" max="10" readonly>
+                            <button onclick="adjustNumber('group-count', 1)">+</button>
+                        </div>
+                    </div>
+                    <div class="form-group-create">
+                        <label data-i18n="deadline">Deadline</label>
+                        <select id="deadline" class="form-input-create">
+                            <option value="6" data-i18n="hours6">6 hours</option>
+                            <option value="12" data-i18n="hours12">12 hours</option>
+                            <option value="24" selected data-i18n="hours24">24 hours</option>
+                            <option value="48" data-i18n="hours48">48 hours</option>
+                        </select>
+                    </div>
+                    <div style="display:flex;gap:12px;margin-top:24px;">
+                        <button class="btn-publish" style="flex:1;background:var(--surface);color:var(--primary);border:1px solid var(--primary);" onclick="nextStep(1)" data-i18n="back">BACK</button>
+                        <button class="btn-publish" style="flex:2;" onclick="nextStep(3)" data-i18n="next">NEXT</button>
+                    </div>
+                </div>
+
+                <div class="create-step" id="create-step3">
+                    <div class="step-title" data-i18n="step3Pickup">Step 3: Pickup Point</div>
+                    <div class="pickup-list" id="pickup-list">
+                        <div class="pickup-option selected" onclick="selectPickup(this, '1号楼自提柜')">
+                            <div class="pickup-icon">&#128205;</div>
+                            <div class="pickup-info">
+                                <div class="pickup-name">1号楼自提柜</div>
+                                <div class="pickup-detail">Main Entrance / Gate A</div>
+                            </div>
+                            <div class="pickup-check">&#10003;</div>
+                        </div>
+                        <div class="pickup-option" onclick="selectPickup(this, '2号楼自提柜')">
+                            <div class="pickup-icon">&#128205;</div>
+                            <div class="pickup-info">
+                                <div class="pickup-name">2号楼自提柜</div>
+                                <div class="pickup-detail">Main Entrance</div>
+                            </div>
+                        </div>
+                        <div class="pickup-option" onclick="selectPickup(this, '3号楼自提柜')">
+                            <div class="pickup-icon">&#128205;</div>
+                            <div class="pickup-info">
+                                <div class="pickup-name">3号楼自提柜</div>
+                                <div class="pickup-detail">Main Entrance</div>
+                            </div>
+                        </div>
+                        <div class="pickup-option" onclick="selectPickup(this, '4号楼自提柜')">
+                            <div class="pickup-icon">&#128205;</div>
+                            <div class="pickup-info">
+                                <div class="pickup-name">4号楼自提柜</div>
+                                <div class="pickup-detail">Main Entrance</div>
+                            </div>
+                        </div>
+                        <div class="pickup-option" onclick="selectPickup(this, 'E栋教学楼')">
+                            <div class="pickup-icon">&#127979;</div>
+                            <div class="pickup-info">
+                                <div class="pickup-name">E栋教学楼</div>
+                                <div class="pickup-detail">Building E Lobby</div>
+                            </div>
+                        </div>
+                        <div class="pickup-option" onclick="selectPickup(this, '菜鸟驿站')">
+                            <div class="pickup-icon">&#128230;</div>
+                            <div class="pickup-info">
+                                <div class="pickup-name">菜鸟驿站</div>
+                                <div class="pickup-detail">Campus Pickup Station</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group-create" id="custom-pickup-group" style="display:none;">
+                        <label data-i18n="customPickup">Custom Pickup Point</label>
+                        <input type="text" id="custom-pickup" data-i18n-placeholder="enterLocation" placeholder="Enter custom location" class="form-input-create">
+                    </div>
+                    <div class="step-title" style="margin-top: 24px;" data-i18n="paymentQrUpload">Merchant Payment QR Code</div>
+                    <div class="payment-qr-upload" onclick="document.getElementById('payment-qr-upload').click()">
+                        <img id="payment-qr-preview" src="assets/merchant-payment-qr.jpg" alt="Merchant payment QR">
+                        <div>
+                            <div class="payment-qr-title" data-i18n="uploadPaymentQr">UPLOAD PAYMENT QR</div>
+                            <div class="payment-qr-note" data-i18n="paymentTip">Scan the captain payment QR code and confirm after paying.</div>
+                        </div>
+                        <input type="file" id="payment-qr-upload" accept="image/*" hidden>
+                    </div>
+                    <button class="btn-publish" onclick="publishGroup()" data-i18n="publishBuy">PUBLISH BUY</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 订单页 -->
+        <div id="view-orders" class="view">
+            <div class="orders-header">
+                <h2 data-i18n="orders">Orders</h2>
+            </div>
+            <div class="order-tabs">
+                <button class="order-tab active" data-tab="pending" onclick="switchOrderTab('pending')" data-i18n="pending">Pending</button>
+                <button class="order-tab" data-tab="pickup" onclick="switchOrderTab('pickup')" data-i18n="toPickUp">To Pick Up</button>
+                <button class="order-tab" data-tab="completed" onclick="switchOrderTab('completed')" data-i18n="completed">Completed</button>
+                <button class="order-tab" data-tab="refund" onclick="switchOrderTab('refund')" data-i18n="refund">Refund</button>
+            </div>
+            <div class="orders-list" id="orders-list"></div>
+        </div>
+
+        <!-- 消息列表页 -->
+        <div id="view-messages" class="view">
+            <div class="sub-header">
+                <span class="sub-title" data-i18n="messages">Messages</span>
+                <span></span>
+            </div>
+            <div class="messages-list" id="messages-list"></div>
+        </div>
+
+        <!-- 消息详情页 -->
+        <div id="view-msg-detail" class="view">
+            <div class="sub-header">
+                <button class="back-btn" onclick="goBack()">&#8592;</button>
+                <span class="sub-title" id="msg-detail-title" data-i18n="message">Message</span>
+                <span></span>
+            </div>
+            <div class="msg-detail-content" id="msg-detail-content"></div>
+        </div>
+
+        <!-- 聊天页 -->
+        <div id="view-chat" class="view">
+            <div class="chat-header">
+                <button class="back-btn" onclick="goBack()">&#8592;</button>
+                <span class="chat-title" id="chat-title">Chat</span>
+                <span></span>
+            </div>
+            <div class="chat-messages" id="chat-messages"></div>
+            <div class="chat-input-bar">
+                <input type="text" id="chat-input" data-i18n-placeholder="typeMessage" placeholder="Type a message..." class="chat-input" onkeypress="handleChatKeypress(event)">
+                <button class="send-btn" onclick="sendMessage()" data-i18n="send">Send</button>
+            </div>
+        </div>
+
+        <!-- 个人中心页 -->
+        <div id="view-profile" class="view">
+            <div class="profile-header">
+                <div class="profile-avatar">
+                    <span>&#128100;</span>
+                    <span class="profile-level">LVL. 01</span>
+                </div>
+                <div class="profile-name" id="user-name">Alex Chen</div>
+                <div class="profile-badge">&#127942; <span data-i18n="captainLevel">Captain Level</span>: Rookie</div>
+            </div>
+            <div class="profile-menu">
+                <div class="menu-grid">
+                    <div class="menu-card" onclick="openMyOrders('my-groups')">
+                        <div class="menu-card-icon">&#128101;</div>
+                        <div class="menu-card-title" data-i18n="myGroups">My Groups</div>
+                        <div class="menu-card-subtitle" data-i18n="activeParticipation">Active participation</div>
+                    </div>
+                    <div class="menu-card" onclick="openMyOrders('my-created')">
+                        <div class="menu-card-icon">&#128227;</div>
+                        <div class="menu-card-title" data-i18n="initiatedGroups">Initiated Groups</div>
+                        <div class="menu-card-subtitle" data-i18n="manageLeads">Manage your leads</div>
+                    </div>
+                    <div class="menu-card" onclick="openView('wallet')">
+                        <div class="menu-card-icon">&#128179;</div>
+                        <div class="menu-card-title" data-i18n="myWallet">My Wallet</div>
+                        <div class="menu-card-subtitle" id="wallet-balance-display">¥128.50 Available</div>
+                    </div>
+                </div>
+
+                <div class="pickup-section">
+                    <div class="pickup-section-header">
+                        <h3 data-i18n="pickupPoints">Pickup Points</h3>
+                        <a href="#" onclick="openView('pickup-points'); return false;" data-i18n="manage">Manage</a>
+                    </div>
+                    <div class="pickup-map-card">
+                        <div class="pickup-map">&#128506;</div>
+                        <div class="pickup-map-info">
+                            <div>
+                                <div class="pickup-map-name">MAIN LIBRARY ENTRANCE</div>
+                                <div class="pickup-map-detail">North Campus, Building G</div>
+                            </div>
+                            <span class="pickup-map-pin">&#128205;</span>
+                        </div>
+                    </div>
+                    <div class="pickup-map-card">
+                        <div class="pickup-map">&#128506;</div>
+                        <div class="pickup-map-info">
+                            <div>
+                                <div class="pickup-map-name">INTERNATIONAL PLAZA</div>
+                                <div class="pickup-map-detail">South Campus, Near Coffee Hut</div>
+                            </div>
+                            <span class="pickup-map-pin">&#128205;</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="profile-links">
+                    <div class="profile-link" onclick="openView('settings')">
+                        <div class="profile-link-left">
+                            <span class="profile-link-icon">&#9881;</span>
+                            <span class="profile-link-text" data-i18n="privacySettings">Privacy Settings</span>
+                        </div>
+                        <span class="profile-link-arrow">></span>
+                    </div>
+                    <div class="profile-link" onclick="openView('customer-service')">
+                        <div class="profile-link-left">
+                            <span class="profile-link-icon">?</span>
+                            <span class="profile-link-text" data-i18n="supportCenter">Support Center</span>
+                        </div>
+                        <span class="profile-link-arrow">></span>
+                    </div>
+                    <div class="profile-link signout" onclick="handleLogout()">
+                        <div class="profile-link-left">
+                            <span class="profile-link-icon">&#128682;</span>
+                            <span class="profile-link-text" data-i18n="signOut">Sign Out</span>
+                        </div>
+                        <span class="profile-link-arrow">></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 钱包页 -->
+        <div id="view-wallet" class="view">
+            <div class="sub-header">
+                <button class="back-btn" onclick="goBack()">&#8592;</button>
+                <span class="sub-title" data-i18n="myWallet">My Wallet</span>
+                <span></span>
+            </div>
+            <div class="wallet-content">
+                <div class="wallet-balance">
+                    <div class="balance-label" data-i18n="availableBalance">Available Balance</div>
+                    <div class="balance-amount" id="wallet-balance">128.50</div>
+                    <div class="merchant-income-line">
+                        <span data-i18n="merchantIncome">Merchant Income</span>
+                        <strong id="merchant-income">¥0.00</strong>
+                    </div>
+                    <div class="wallet-actions">
+                        <button class="wallet-btn deposit" onclick="openWalletModal('deposit')" data-i18n="deposit">Deposit</button>
+                        <button class="wallet-btn withdraw" onclick="openWalletModal('withdraw')" data-i18n="withdraw">Withdraw</button>
+                    </div>
+                </div>
+                <div class="merchant-card">
+                    <div>
+                        <div class="merchant-title" data-i18n="merchantSetup">Merchant Setup</div>
+                        <div class="merchant-subtitle" id="merchant-status">WeChat Pay: Not ready · Alipay: Not ready</div>
+                        <div class="merchant-subtitle" id="bank-status">Bank card: Not bound</div>
+                    </div>
+                    <button class="merchant-btn" onclick="openMerchantModal()" data-i18n="configure">Configure</button>
+                </div>
+                <div class="wallet-records">
+                    <div class="records-tabs">
+                        <button class="record-tab active" data-type="all" onclick="switchRecordTab('all')" data-i18n="all">All</button>
+                        <button class="record-tab" data-type="deposit" onclick="switchRecordTab('deposit')" data-i18n="deposit">Deposit</button>
+                        <button class="record-tab" data-type="withdraw" onclick="switchRecordTab('withdraw')" data-i18n="withdraw">Withdraw</button>
+                        <button class="record-tab" data-type="consume" onclick="switchRecordTab('consume')" data-i18n="spending">Spending</button>
+                    </div>
+                    <div class="records-list" id="wallet-records"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 充值/提现弹窗 -->
+        <div id="wallet-modal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 id="modal-title">Deposit</h3>
+                    <button class="modal-close" onclick="closeWalletModal()">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="amount-presets">
+                        <button onclick="setAmount(50)">¥50</button>
+                        <button onclick="setAmount(100)">¥100</button>
+                        <button onclick="setAmount(200)">¥200</button>
+                        <button onclick="setAmount(500)">¥500</button>
+                    </div>
+                    <div class="form-group-create">
+                        <label data-i18n="amount">Amount</label>
+                        <input type="number" id="wallet-amount" placeholder="0.00" class="form-input-create">
+                    </div>
+                    <button class="btn-confirm" onclick="confirmWalletAction()" data-i18n="confirm">Confirm</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 商户/银行卡配置弹窗 -->
+        <div id="merchant-modal" class="modal">
+            <div class="modal-content merchant-modal-content">
+                <div class="modal-header">
+                    <h3 data-i18n="merchantSetup">Merchant Setup</h3>
+                    <button class="modal-close" onclick="closeMerchantModal()">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="merchant-form-section">
+                        <h4 data-i18n="wechatMerchant">WeChat Merchant</h4>
+                        <div class="form-group-create">
+                            <label>Merchant ID</label>
+                            <input type="text" id="wechat-mch-id" class="form-input-create">
+                        </div>
+                        <div class="form-group-create">
+                            <label>App ID</label>
+                            <input type="text" id="wechat-app-id" class="form-input-create">
+                        </div>
+                        <div class="form-group-create">
+                            <label>Certificate Serial No.</label>
+                            <input type="text" id="wechat-serial-no" class="form-input-create">
+                        </div>
+                        <div class="form-group-create">
+                            <label>Private Key Path</label>
+                            <input type="text" id="wechat-key-path" class="form-input-create" placeholder="/absolute/path/to/apiclient_key.pem">
+                        </div>
+                        <div class="form-group-create">
+                            <label>Notify URL</label>
+                            <input type="text" id="wechat-notify-url" class="form-input-create" placeholder="https://your-domain/api/payments/wechat/notify">
+                        </div>
+                    </div>
+                    <div class="merchant-form-section">
+                        <h4 data-i18n="alipayMerchant">Alipay Merchant</h4>
+                        <div class="form-group-create">
+                            <label>App ID</label>
+                            <input type="text" id="alipay-app-id" class="form-input-create">
+                        </div>
+                        <div class="form-group-create">
+                            <label>Private Key Path</label>
+                            <input type="text" id="alipay-key-path" class="form-input-create" placeholder="/absolute/path/to/alipay_private_key.pem">
+                        </div>
+                        <div class="form-group-create">
+                            <label>Notify URL</label>
+                            <input type="text" id="alipay-notify-url" class="form-input-create" placeholder="https://your-domain/api/payments/alipay/notify">
+                        </div>
+                        <div class="form-group-create">
+                            <label>Gateway</label>
+                            <input type="text" id="alipay-gateway" class="form-input-create" value="https://openapi.alipay.com/gateway.do">
+                        </div>
+                    </div>
+                    <div class="merchant-form-section">
+                        <h4 data-i18n="bankSettlement">Bank Settlement</h4>
+                        <div class="form-group-create">
+                            <label data-i18n="accountName">Account Name</label>
+                            <input type="text" id="bank-account-name" class="form-input-create">
+                        </div>
+                        <div class="form-group-create">
+                            <label data-i18n="bankName">Bank Name</label>
+                            <input type="text" id="bank-name" class="form-input-create">
+                        </div>
+                        <div class="form-group-create">
+                            <label data-i18n="bankCardNumber">Bank Card Number</label>
+                            <input type="text" id="bank-card-number" class="form-input-create">
+                        </div>
+                        <div class="form-group-create">
+                            <label data-i18n="bankBranch">Branch</label>
+                            <input type="text" id="bank-branch" class="form-input-create">
+                        </div>
+                    </div>
+                    <div class="login-tip" data-i18n="settlementNote">Real settlement is controlled by WeChat Pay / Alipay merchant account rules. The bank card here records your payout account for the app.</div>
+                    <button class="btn-confirm" onclick="saveMerchantConfig()" data-i18n="saveMerchantConfig">Save Merchant Config</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 支付弹窗 -->
+        <div id="payment-modal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 data-i18n="secureCheckout">Secure Checkout</h3>
+                    <button class="modal-close" onclick="closePaymentModal()">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="payment-summary-card">
+                        <div class="payment-product" id="payment-product-name">Product</div>
+                        <div class="payment-meta" id="payment-product-pickup">Pickup</div>
+                        <div class="payment-amount-row">
+                            <span data-i18n="amountLabel">Amount</span>
+                            <strong id="payment-amount">¥0.00</strong>
+                        </div>
+                    </div>
+                    <div class="payment-methods">
+                        <button class="payment-method active" data-method="wallet" onclick="selectPaymentMethod('wallet')">
+                            <div>
+                                <div class="payment-method-title" data-i18n="walletPay">Wallet Pay</div>
+                                <div class="payment-method-subtitle" id="wallet-pay-balance">Balance ¥128.50</div>
+                            </div>
+                            <span>✓</span>
+                        </button>
+                        <button class="payment-method" data-method="wechat" onclick="selectPaymentMethod('wechat')">
+                            <div>
+                                <div class="payment-method-title" data-i18n="wechatPay">WeChat Pay</div>
+                                <div class="payment-method-subtitle" data-i18n="recommendedFast">Fast campus checkout</div>
+                            </div>
+                            <span>✓</span>
+                        </button>
+                        <button class="payment-method" data-method="alipay" onclick="selectPaymentMethod('alipay')">
+                            <div>
+                                <div class="payment-method-title" data-i18n="alipay">Alipay</div>
+                                <div class="payment-method-subtitle" data-i18n="recommendedSecure">Protected transaction</div>
+                            </div>
+                            <span>✓</span>
+                        </button>
+                    </div>
+                    <div class="login-tip" id="payment-tip" data-i18n="paymentTip">Wallet balance will be used first if selected.</div>
+                    <button class="btn-confirm" onclick="confirmGroupPayment()" data-i18n="confirmPay">Confirm Payment</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 收款码支付弹窗 -->
+        <div id="qr-payment-modal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 data-i18n="qrPaymentTitle">Scan to Pay</h3>
+                    <button class="modal-close" onclick="closeQrPaymentModal()">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="qr-pay-summary">
+                        <div class="payment-product" id="qr-payment-product">Product</div>
+                        <div class="payment-meta" id="qr-payment-method">WeChat Pay</div>
+                        <div class="qr-pay-amount" id="qr-payment-amount">¥0.00</div>
+                    </div>
+                    <img id="qr-payment-image" class="qr-payment-image" src="assets/merchant-payment-qr.jpg" alt="Merchant payment QR">
+                    <div class="login-tip" data-i18n="qrPaymentNotice">Please complete payment in WeChat or Alipay before confirming.</div>
+                    <button class="btn-confirm" onclick="confirmQrPayment()" data-i18n="confirmPaid">I have paid</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 自提点位页 -->
+        <div id="view-pickup-points" class="view">
+            <div class="sub-header">
+                <button class="back-btn" onclick="goBack()">&#8592;</button>
+                <span class="sub-title" data-i18n="pickupPoints">Pickup Points</span>
+                <span></span>
+            </div>
+            <div class="pickup-content" id="pickup-content"></div>
+        </div>
+
+        <!-- 客服中心页 -->
+        <div id="view-customer-service" class="view">
+            <div class="sub-header">
+                <button class="back-btn" onclick="goBack()">&#8592;</button>
+                <span class="sub-title" data-i18n="supportCenter">Support Center</span>
+                <span></span>
+            </div>
+            <div class="cs-content">
+                <div class="cs-faq">
+                    <h3 data-i18n="faq">FAQ</h3>
+                    <div class="faq-item" onclick="toggleFaq(this)">
+                        <div class="faq-question" data-i18n="faqRefund">How does refund work?</div>
+                        <div class="faq-answer" data-i18n="faqRefundAnswer">Full refund available if the group is not completed within 24 hours. No cancellation after group completion.</div>
+                    </div>
+                    <div class="faq-item" onclick="toggleFaq(this)">
+                        <div class="faq-question" data-i18n="faqPickup">How to change pickup point?</div>
+                        <div class="faq-answer" data-i18n="faqPickupAnswer">Before group completion, captains can edit pickup info in "Initiated Groups". After completion, contact the captain.</div>
+                    </div>
+                    <div class="faq-item" onclick="toggleFaq(this)">
+                        <div class="faq-question" data-i18n="faqQuality">Quality issues?</div>
+                        <div class="faq-answer" data-i18n="faqQualityAnswer">Report within 24 hours of pickup with photos. Contact captain or support for assistance.</div>
+                    </div>
+                    <div class="faq-item" onclick="toggleFaq(this)">
+                        <div class="faq-question" data-i18n="faqCaptain">How to become a captain?</div>
+                        <div class="faq-answer" data-i18n="faqCaptainAnswer">Click "Initiate" on home page to start. After 3 successful groups, upgrade to Senior Captain.</div>
+                    </div>
+                </div>
+                <div class="cs-contact">
+                    <h3 data-i18n="contactSupport">Contact Support</h3>
+                    <button class="cs-btn" onclick="openChat('Support Assistant', 'cs')" data-i18n="onlineSupport">&#128172; Online Support</button>
+                    <div class="cs-info">
+                        <p data-i18n="supportHours">Hours: Mon-Fri 9:00-21:00</p>
+                        <p>Email: support@tt-xjtlu.com</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 设置页 -->
+        <div id="view-settings" class="view">
+            <div class="sub-header">
+                <button class="back-btn" onclick="goBack()">&#8592;</button>
+                <span class="sub-title" data-i18n="settings">Settings</span>
+                <span></span>
+            </div>
+            <div class="settings-content">
+                <div class="settings-group">
+                    <div class="settings-item" onclick="toggleLanguage()">
+                        <span data-i18n="language">Language</span>
+                        <span class="settings-arrow" id="lang-display">English ></span>
+                    </div>
+                </div>
+                <div class="settings-group">
+                    <div class="settings-item">
+                        <span data-i18n="notifications">Notifications</span>
+                        <label class="switch"><input type="checkbox" checked><span class="slider"></span></label>
+                    </div>
+                    <div class="settings-item">
+                        <span data-i18n="groupAlerts">Group Alerts</span>
+                        <label class="switch"><input type="checkbox" checked><span class="slider"></span></label>
+                    </div>
+                    <div class="settings-item">
+                        <span data-i18n="pickupReminders">Pickup Reminders</span>
+                        <label class="switch"><input type="checkbox" checked><span class="slider"></span></label>
+                    </div>
+                </div>
+                <div class="settings-group">
+                    <div class="settings-item" onclick="alert('Cache cleared')">
+                        <span data-i18n="clearCache">Clear Cache</span>
+                        <span class="settings-arrow">></span>
+                    </div>
+                    <div class="settings-item" onclick="alert('Version: v1.0.0')">
+                        <span data-i18n="aboutTT">About TT</span>
+                        <span class="settings-arrow">v1.0.0 ></span>
+                    </div>
+                </div>
+                <div class="settings-group">
+                    <div class="settings-item" onclick="window.location.href='admin.html'">
+                        <span data-i18n="adminPanel">Admin Panel</span>
+                        <span class="settings-arrow">></span>
+                    </div>
+                    <div class="settings-item" onclick="alert('Terms')">
+                        <span data-i18n="terms">Terms of Service</span>
+                        <span class="settings-arrow">></span>
+                    </div>
+                    <div class="settings-item" onclick="alert('Privacy')">
+                        <span data-i18n="privacy">Privacy Policy</span>
+                        <span class="settings-arrow">></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 编辑资料页 -->
+        <div id="view-edit-profile" class="view">
+            <div class="sub-header">
+                <button class="back-btn" onclick="goBack()">&#8592;</button>
+                <span class="sub-title" data-i18n="editProfile">Edit Profile</span>
+                <button class="save-btn" onclick="saveProfile()" data-i18n="save">Save</button>
+            </div>
+            <div class="edit-content">
+                <div class="edit-avatar">
+                    <div class="avatar-large"><span>&#128100;</span></div>
+                    <span class="change-avatar" data-i18n="changeAvatar">Change Avatar</span>
+                </div>
+                <div class="form-group-create">
+                    <label data-i18n="displayName">Display Name</label>
+                    <input type="text" id="edit-name" value="Alex Chen" class="form-input-create">
+                </div>
+                <div class="form-group-create">
+                    <label data-i18n="studentId">Student ID</label>
+                    <input type="text" value="201234567" class="form-input-create" readonly style="opacity:0.5;">
+                </div>
+                <div class="form-group-create">
+                    <label data-i18n="phone">Phone</label>
+                    <input type="text" id="edit-phone" value="138****5678" class="form-input-create">
+                </div>
+                <div class="form-group-create">
+                    <label data-i18n="defaultPickup">Default Pickup Point</label>
+                    <select class="form-input-create">
+                        <option>1号楼自提柜</option>
+                        <option>2号楼自提柜</option>
+                        <option>3号楼自提柜</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- 我的订单子页面 -->
+        <div id="view-my-orders" class="view">
+            <div class="sub-header">
+                <button class="back-btn" onclick="goBack()">&#8592;</button>
+                <span class="sub-title" id="my-orders-title">My Groups</span>
+                <span></span>
+            </div>
+            <div class="orders-list" id="my-orders-list"></div>
+        </div>
+    </div>
+
+    <!-- 底部导航 -->
+    <nav class="bottom-nav">
+        <button class="nav-item active" data-view="home" onclick="switchTab('home')">
+            <span class="nav-icon">&#127968;</span>
+            <span data-i18n="home">Home</span>
+        </button>
+        <button class="nav-item" data-view="orders" onclick="switchTab('orders')">
+            <span class="nav-icon">&#128269;</span>
+            <span data-i18n="search">Search</span>
+        </button>
+        <button class="nav-item" data-view="create" onclick="switchTab('create')">
+            <div class="create-btn"><span class="create-icon">+</span></div>
+            <span data-i18n="initiate">Initiate</span>
+        </button>
+        <button class="nav-item" data-view="messages" onclick="switchTab('messages')">
+            <span class="nav-icon">&#128172;</span>
+            <span data-i18n="messages">Messages</span>
+            <span class="badge" id="msg-badge">3</span>
+        </button>
+        <button class="nav-item" data-view="profile" onclick="switchTab('profile')">
+            <span class="nav-icon">&#128100;</span>
+            <span data-i18n="profile">Profile</span>
+        </button>
+    </nav>
+</div>
+
+<script src="js/logger.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>

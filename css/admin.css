@@ -1,0 +1,331 @@
+/* ===== 管理后台样式 ===== */
+body {
+    background: var(--background);
+    overflow: auto;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+}
+
+#admin-app {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.admin-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: var(--primary);
+    color: var(--on-primary);
+    padding: 20px 24px;
+    border-radius: var(--radius-lg);
+    margin-bottom: 20px;
+}
+
+.admin-header h1 {
+    font-family: 'Epilogue', sans-serif;
+    font-size: 24px;
+    font-weight: 700;
+}
+
+.admin-header-actions {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+}
+
+.live-indicator {
+    font-size: 13px;
+    color: rgba(255,255,255,0.8);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    background: rgba(52,199,89,0.2);
+    border-radius: var(--radius-full);
+    transition: all 0.3s;
+}
+
+.live-indicator.active {
+    background: rgba(52,199,89,0.4);
+    color: white;
+    transform: scale(1.05);
+}
+
+.last-update {
+    font-size: 12px;
+    color: rgba(255,255,255,0.6);
+    margin-left: 8px;
+}
+
+.btn-admin {
+    padding: 10px 18px;
+    border: none;
+    border-radius: var(--radius-full);
+    font-size: 14px;
+    cursor: pointer;
+    background: rgba(255,255,255,0.2);
+    color: white;
+    transition: background 0.2s;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-weight: 600;
+}
+
+.btn-admin:hover {
+    background: rgba(255,255,255,0.3);
+}
+
+.btn-admin.danger {
+    background: rgba(255,59,48,0.8);
+}
+
+.admin-tabs {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 24px;
+    background: var(--surface);
+    padding: 8px;
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--surface-high);
+}
+
+.admin-tab {
+    flex: 1;
+    padding: 12px;
+    border: none;
+    border-radius: var(--radius-md);
+    background: transparent;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--on-surface-variant);
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.admin-tab.active {
+    background: var(--primary);
+    color: var(--on-primary);
+}
+
+.admin-view { display: none; }
+.admin-view.active { display: block; }
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.stat-card {
+    background: var(--surface);
+    border: 1px solid var(--surface-high);
+    border-radius: var(--radius-lg);
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.stat-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: var(--radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+}
+
+.stat-icon.blue { background: #E3F2FD; }
+.stat-icon.green { background: #E8F5E9; }
+.stat-icon.orange { background: #FFF3E0; }
+.stat-icon.purple { background: #F3E5F5; }
+
+.stat-value {
+    font-family: 'Epilogue', sans-serif;
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--primary);
+}
+
+.stat-label {
+    font-size: 13px;
+    color: var(--on-surface-variant);
+}
+
+.admin-section {
+    background: var(--surface);
+    border: 1px solid var(--surface-high);
+    border-radius: var(--radius-lg);
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+.admin-section h3 {
+    font-family: 'Epilogue', sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--primary);
+    margin-bottom: 16px;
+}
+
+.bar-chart { display: flex; flex-direction: column; gap: 12px; }
+
+.bar-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.bar-label {
+    width: 80px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--on-surface);
+    text-align: right;
+}
+
+.bar-track {
+    flex: 1;
+    height: 24px;
+    background: var(--surface-low);
+    border-radius: var(--radius-full);
+    overflow: hidden;
+}
+
+.bar-fill {
+    height: 100%;
+    background: var(--primary);
+    border-radius: var(--radius-full);
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    padding-right: 8px;
+    min-width: 40px;
+}
+
+.bar-value {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--on-primary);
+}
+
+.user-list { display: flex; flex-direction: column; gap: 8px; }
+
+.user-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 12px;
+    background: var(--surface-low);
+    border-radius: var(--radius-md);
+}
+
+.user-item-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--primary);
+}
+
+.user-item-count {
+    font-size: 13px;
+    color: var(--on-surface-variant);
+}
+
+.log-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.log-table th {
+    text-align: left;
+    padding: 12px;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--on-surface-variant);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    border-bottom: 1px solid var(--surface-high);
+}
+
+.log-table td {
+    padding: 12px;
+    font-size: 13px;
+    color: var(--on-surface);
+    border-bottom: 1px solid var(--surface-high);
+}
+
+.action-badge {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: var(--radius-full);
+    font-size: 11px;
+    font-weight: 600;
+    background: var(--surface-low);
+    color: var(--primary);
+}
+
+.filter-bar {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 16px;
+    align-items: flex-end;
+}
+
+.filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.filter-group label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--on-surface-variant);
+}
+
+.filter-group select, .filter-group input {
+    padding: 8px 12px;
+    border: 1px solid var(--surface-high);
+    border-radius: var(--radius-md);
+    font-size: 13px;
+    background: var(--surface);
+    color: var(--on-surface);
+}
+
+.btn-filter {
+    padding: 8px 16px;
+    background: var(--surface-low);
+    border: 1px solid var(--surface-high);
+    border-radius: var(--radius-md);
+    font-size: 13px;
+    cursor: pointer;
+    color: var(--primary);
+    font-weight: 600;
+}
+
+.log-count {
+    font-size: 13px;
+    color: var(--on-surface-variant);
+    margin-bottom: 12px;
+}
+
+.log-count span {
+    font-weight: 700;
+    color: var(--primary);
+}
+
+.log-table-wrapper {
+    overflow-x: auto;
+    background: var(--surface);
+    border: 1px solid var(--surface-high);
+    border-radius: var(--radius-lg);
+}
+
+canvas {
+    width: 100%;
+    max-width: 100%;
+    border-radius: var(--radius-md);
+}
