@@ -177,7 +177,7 @@
             <div class="stat"><div class="label">注册用户</div><div class="value" id="total-users">0</div></div>
             <div class="stat"><div class="label">今日新增</div><div class="value" id="today-users">0</div></div>
             <div class="stat"><div class="label">填写姓名</div><div class="value" id="named-users">0</div></div>
-            <div class="stat"><div class="label">邮箱验证码</div><div class="value" id="email-users">0</div></div>
+            <div class="stat"><div class="label">学号登录</div><div class="value" id="student-users">0</div></div>
         </section>
 
         <section class="grid">
@@ -203,7 +203,12 @@
         }
 
         function domainOf(email) {
+            if (String(email || '').endsWith('@tt-campus.local')) return 'student_id';
             return String(email || '').split('@')[1] || 'unknown';
+        }
+
+        function displayEmail(row) {
+            return String(row.email || '').endsWith('@tt-campus.local') ? '-' : (row.email || '-');
         }
 
         function isToday(value) {
@@ -219,7 +224,7 @@
             document.getElementById('total-users').textContent = rows.length;
             document.getElementById('today-users').textContent = rows.filter(function(row) { return isToday(row.created_at); }).length;
             document.getElementById('named-users').textContent = rows.filter(function(row) { return row.name; }).length;
-            document.getElementById('email-users').textContent = rows.filter(function(row) { return row.email; }).length;
+            document.getElementById('student-users').textContent = rows.filter(function(row) { return row.auth_method === 'student_id'; }).length;
         }
 
         function renderDomains(rows) {
@@ -245,7 +250,7 @@
             }
             document.getElementById('table-wrap').innerHTML = '<table><thead><tr><th>邮箱</th><th>姓名</th><th>学号</th><th>登录方式</th><th>创建时间</th></tr></thead><tbody>' +
                 rows.map(function(row) {
-                    return '<tr><td>' + (row.email || '-') + '</td><td>' + (row.name || '-') + '</td><td>' + (row.student_id || '-') + '</td><td><span class="pill">' + (row.auth_method || 'email_otp') + '</span></td><td>' + formatDate(row.created_at) + '</td></tr>';
+                    return '<tr><td>' + displayEmail(row) + '</td><td>' + (row.name || '-') + '</td><td>' + (row.student_id || '-') + '</td><td><span class="pill">' + (row.auth_method || 'email_otp') + '</span></td><td>' + formatDate(row.created_at) + '</td></tr>';
                 }).join('') +
                 '</tbody></table>';
         }

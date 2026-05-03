@@ -111,7 +111,7 @@ function getProfileFromAppwriteUser(user, overrides = {}) {
         email: user.email || overrides.email || '',
         name: String(overrides.name || user.name || user.email || '').trim(),
         student_id: String(overrides.studentId || '').trim(),
-        auth_method: 'email_otp',
+        auth_method: overrides.authMethod || 'email_otp',
         created_at: now,
         updated_at: now
     };
@@ -632,6 +632,37 @@ async function handleAuthProfile(req, res) {
     }
 }
 
+async function handleStudentLogin(req, res) {
+    try {
+        const body = await parseJsonBody(req);
+        const studentId = String(body.studentId || '').trim();
+        const name = String(body.name || 'Student ' + studentId).trim();
+        if (!studentId) {
+            sendJson(res, 400, { ok: false, message: 'Missing student ID' });
+            return;
+        }
+
+        const safeId = studentId.replace(/[^a-zA-Z0-9._-]/g, '_').slice(0, 48);
+        const userId = `student_${safeId}`;
+        const email = `student-${safeId}@tt-campus.local`;
+        const user = { $id: userId, email, name };
+        const profile = await upsertAppwriteProfile(user, {
+            userId,
+            name,
+            studentId,
+            email,
+            authMethod: 'student_id'
+        });
+        sendJson(res, 200, {
+            ok: true,
+            user,
+            profile
+        });
+    } catch (error) {
+        sendJson(res, 500, { ok: false, message: error.message });
+    }
+}
+
 async function handleAdminProfiles(req, res) {
     try {
         const data = await listAppwriteProfiles();
@@ -816,6 +847,11 @@ const server = http.createServer(async (req, res) => {
 
     if (req.method === 'POST' && req.url === '/api/auth/email-signup') {
         await handleEmailSignup(req, res);
+        return;
+    }
+
+    if (req.method === 'POST' && req.url === '/api/auth/student-login') {
+        await handleStudentLogin(req, res);
         return;
     }
 
