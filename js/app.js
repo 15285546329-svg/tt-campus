@@ -115,11 +115,9 @@ const defaultUser = {
     studentId: '201234567',
     email: '',
     appwriteUserId: '',
-    phone: '13800138000',
     defaultPickup: '1号楼自提柜',
     authMethod: 'student',
-    emailVerified: false,
-    phoneVerified: false
+    emailVerified: false
 };
 
 // ===== 状态管理 =====
@@ -137,7 +135,6 @@ let currentDetailGroupId = null;
 let currentLang = localStorage.getItem('tt_lang') || 'en';
 let loginMode = 'student';
 let currentUser = JSON.parse(JSON.stringify(defaultUser));
-let smsCodeState = { code: '', expiresAt: 0, countdown: 0, timer: null };
 let emailOtpState = { userId: '', email: '' };
 let authSession = null;
 let paymentContext = null;
@@ -698,7 +695,6 @@ function applyLanguage() {
 
     syncUserUI();
     renderMerchantConfig();
-    updateSendCodeButton();
     updatePaymentMethodLabels();
 }
 
@@ -735,7 +731,7 @@ function persistAuthSession(session) {
     authSession = session || null;
     if (authSession) {
         localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(authSession));
-    } else if (loginMode === 'phone') {
+    } else {
         localStorage.removeItem(AUTH_STORAGE_KEY);
     }
 }
@@ -927,32 +923,26 @@ function syncUserUI() {
     var editName = document.getElementById('edit-name');
     if (editName) editName.value = currentUser.name;
 
-    var editPhone = document.getElementById('edit-phone');
-    if (editPhone) editPhone.value = currentUser.phone;
-
     var studentReadonly = document.querySelector('#view-edit-profile input[readonly]');
     if (studentReadonly) studentReadonly.value = currentUser.studentId;
 
     var badge = document.querySelector('.profile-badge');
     if (badge) {
-        var authText = currentUser.emailVerified ? ' · ' + t('emailLogin') : (currentUser.phoneVerified ? ' · ' + t('smsLoginBadge') : '');
+        var authText = currentUser.emailVerified ? ' · ' + t('emailLogin') : '';
         badge.innerHTML = '&#127942; ' + t('captainLevel') + ': Rookie' + authText;
     }
 }
 
 function getLoginSubmitText() {
     if (loginMode === 'student') return t('xjtluLogin');
-    if (loginMode === 'phone') return t('loginWithPhone');
     return t('emailLoginSubmit');
 }
 
 function switchLoginMode(mode) {
     loginMode = mode;
     document.getElementById('login-mode-student').classList.toggle('active', mode === 'student');
-    document.getElementById('login-mode-phone').classList.toggle('active', mode === 'phone');
     document.getElementById('login-mode-email').classList.toggle('active', mode === 'email');
     document.getElementById('student-login-panel').classList.toggle('active', mode === 'student');
-    document.getElementById('phone-login-panel').classList.toggle('active', mode === 'phone');
     document.getElementById('email-login-panel').classList.toggle('active', mode === 'email');
     document.getElementById('login-submit-btn').textContent = getLoginSubmitText();
 }
@@ -971,6 +961,8 @@ async function postJson(path, payload) {
 }
 
 async function sendPhoneCode() {
+    return;
+/*
     var phone = document.getElementById('login-phone').value.trim();
     if (!/^1\d{10}$/.test(phone)) {
         alert(t('invalidPhone'));
@@ -1017,19 +1009,11 @@ async function sendPhoneCode() {
     } finally {
         updateSendCodeButton();
     }
+*/
 }
 
 function updateSendCodeButton() {
-    var btn = document.getElementById('send-code-btn');
-    if (!btn) return;
-
-    if (smsCodeState.countdown > 0) {
-        btn.disabled = true;
-        btn.textContent = t('resendCode') + smsCodeState.countdown + 's';
-    } else if (loginMode === 'phone') {
-        btn.disabled = false;
-        btn.textContent = t('sendCode');
-    }
+    return;
 }
 
 // ===== 初始化 =====
@@ -1191,32 +1175,6 @@ async function handleLogin() {
     if (loginMode === 'student') {
         currentUser.studentId = document.getElementById('student-id').value.trim() || defaultUser.studentId;
         currentUser.authMethod = 'student';
-    } else if (loginMode === 'phone') {
-        var phone = document.getElementById('login-phone').value.trim();
-        var code = document.getElementById('login-code').value.trim();
-
-        if (!/^1\d{10}$/.test(phone)) {
-            alert(t('invalidPhone'));
-            return;
-        }
-        if (!/^\d{6}$/.test(code)) {
-            alert(t('invalidCode'));
-            return;
-        }
-
-        try {
-            var result = await postJson('/api/auth/phone-login', {
-                phone: phone,
-                code: code
-            });
-            currentUser.phone = phone;
-            currentUser.authMethod = result.user && result.user.authMethod ? result.user.authMethod : 'phone';
-            currentUser.phoneVerified = !!(result.user && result.user.phoneVerified);
-        } catch (error) {
-            alert(error.message || t('invalidCode'));
-            return;
-        }
-        alert(t('loginSuccessPhone'));
     } else {
         var emailLoggedIn = await handleEmailLogin();
         if (!emailLoggedIn) return;
@@ -1225,7 +1183,7 @@ async function handleLogin() {
     completeLogin();
     if (typeof UserLogger !== 'undefined') {
         var sid = currentUser.studentId;
-        UserLogger.log('login', 'User login: ' + sid, 'Method: ' + currentUser.authMethod + ', Phone: ' + currentUser.phone);
+        UserLogger.log('login', 'User login: ' + sid, 'Method: ' + currentUser.authMethod + ', Email: ' + currentUser.email);
     }
 }
 
@@ -2118,14 +2076,8 @@ function toggleFaq(el) {
 // ===== 编辑资料 =====
 async function saveProfile() {
     var name = document.getElementById('edit-name').value;
-    var phone = document.getElementById('edit-phone').value.trim();
     if (name) {
         currentUser.name = name;
-    }
-    if (phone) {
-        var originalPhone = currentUser.phone;
-        currentUser.phone = phone;
-        currentUser.phoneVerified = /^1\d{10}$/.test(phone) && phone === originalPhone ? currentUser.phoneVerified : false;
     }
     persistUserState();
     syncUserUI();
@@ -2135,7 +2087,6 @@ async function saveProfile() {
                 userId: currentUser.appwriteUserId,
                 email: currentUser.email,
                 name: currentUser.name,
-                phone: currentUser.phone,
                 studentId: currentUser.studentId
             });
         } catch (error) {
@@ -2147,6 +2098,6 @@ async function saveProfile() {
     goBack();
     
     if (typeof UserLogger !== 'undefined') {
-        UserLogger.log('update_profile', 'Updated profile', 'Name: ' + name + ', Phone: ' + phone);
+        UserLogger.log('update_profile', 'Updated profile', 'Name: ' + name + ', Student ID: ' + currentUser.studentId);
     }
 }
