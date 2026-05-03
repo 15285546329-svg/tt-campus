@@ -18,7 +18,6 @@
         <div class="login-form">
             <div class="login-mode-switch">
                 <button class="login-mode-tab active" id="login-mode-student" onclick="switchLoginMode('student')" data-i18n="campusAccountLogin">Campus Account</button>
-                <button class="login-mode-tab" id="login-mode-phone" onclick="switchLoginMode('phone')" data-i18n="phoneLogin">Phone Login</button>
                 <button class="login-mode-tab" id="login-mode-email" onclick="switchLoginMode('email')" data-i18n="emailLogin">Email Login</button>
             </div>
 
@@ -31,21 +30,6 @@
                     <label class="form-label" data-i18n="password">Password</label>
                     <input type="password" id="password" placeholder="••••••••" class="form-input" value="123456">
                 </div>
-            </div>
-
-            <div id="phone-login-panel" class="login-panel">
-                <div class="form-group">
-                    <label class="form-label" data-i18n="phoneNumber">Phone Number</label>
-                    <input type="tel" id="login-phone" placeholder="e.g. 13800138000" class="form-input" value="13800138000">
-                </div>
-                <div class="form-group">
-                    <label class="form-label" data-i18n="verificationCode">Verification Code</label>
-                    <div class="inline-input-group">
-                        <input type="text" id="login-code" placeholder="123456" class="form-input" maxlength="6">
-                        <button class="btn-send-code" id="send-code-btn" onclick="sendPhoneCode()" data-i18n="sendCode">Send Code</button>
-                    </div>
-                </div>
-                <div class="login-tip" id="sms-tip" data-i18n="phoneLoginHint">Use your campus-linked mobile number to receive a one-time code.</div>
             </div>
 
             <div id="email-login-panel" class="login-panel">
@@ -770,10 +754,6 @@
                 <div class="form-group-create">
                     <label data-i18n="studentId">Student ID</label>
                     <input type="text" value="201234567" class="form-input-create" readonly style="opacity:0.5;">
-                </div>
-                <div class="form-group-create">
-                    <label data-i18n="phone">Phone</label>
-                    <input type="text" id="edit-phone" value="138****5678" class="form-input-create">
                 </div>
                 <div class="form-group-create">
                     <label data-i18n="defaultPickup">Default Pickup Point</label>

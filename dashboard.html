@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TT Campus 数据看板</title>
+    <style>
+        :root {
+            --ink: #16181d;
+            --muted: #667085;
+            --line: #e6e8ef;
+            --pink: #ff2f75;
+            --blue: #2563eb;
+            --green: #12b76a;
+            --bg: #f7f8fb;
+            --card: #ffffff;
+        }
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            background: var(--bg);
+            color: var(--ink);
+            font-family: Inter, "Segoe UI", Arial, sans-serif;
+        }
+        .wrap {
+            width: min(1180px, calc(100vw - 48px));
+            margin: 32px auto;
+        }
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 24px;
+            margin-bottom: 24px;
+        }
+        h1 {
+            margin: 0;
+            font-size: 34px;
+            letter-spacing: 0;
+        }
+        .sub {
+            margin-top: 8px;
+            color: var(--muted);
+            font-size: 15px;
+        }
+        .actions {
+            display: flex;
+            gap: 10px;
+        }
+        button {
+            border: 1px solid var(--line);
+            background: var(--card);
+            color: var(--ink);
+            border-radius: 8px;
+            padding: 11px 14px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+        button.primary {
+            background: var(--pink);
+            border-color: var(--pink);
+            color: #fff;
+        }
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 14px;
+            margin-bottom: 18px;
+        }
+        .stat {
+            background: var(--card);
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            padding: 18px;
+        }
+        .label {
+            color: var(--muted);
+            font-size: 13px;
+            font-weight: 700;
+        }
+        .value {
+            margin-top: 8px;
+            font-size: 32px;
+            font-weight: 800;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: 1.05fr 1.95fr;
+            gap: 18px;
+        }
+        .panel {
+            background: var(--card);
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        .panel h2 {
+            margin: 0;
+            padding: 16px 18px;
+            font-size: 18px;
+            border-bottom: 1px solid var(--line);
+        }
+        .bars {
+            padding: 16px 18px 20px;
+        }
+        .bar-row {
+            display: grid;
+            grid-template-columns: 92px 1fr 42px;
+            gap: 10px;
+            align-items: center;
+            margin: 14px 0;
+            font-size: 14px;
+        }
+        .bar {
+            height: 12px;
+            background: #eef2ff;
+            border-radius: 999px;
+            overflow: hidden;
+        }
+        .bar span {
+            display: block;
+            height: 100%;
+            background: var(--blue);
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+        th, td {
+            padding: 13px 14px;
+            border-bottom: 1px solid var(--line);
+            text-align: left;
+            vertical-align: top;
+        }
+        th {
+            color: var(--muted);
+            font-size: 12px;
+            text-transform: uppercase;
+        }
+        .pill {
+            display: inline-flex;
+            padding: 4px 8px;
+            border-radius: 999px;
+            background: #ecfdf3;
+            color: #067647;
+            font-size: 12px;
+            font-weight: 800;
+        }
+        .empty, .error {
+            padding: 22px;
+            color: var(--muted);
+        }
+        .error { color: #b42318; }
+        @media (max-width: 860px) {
+            header, .grid { display: block; }
+            .actions { margin-top: 16px; }
+            .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+            .panel { margin-bottom: 18px; }
+        }
+    </style>
+</head>
+<body>
+    <main class="wrap">
+        <header>
+            <div>
+                <h1>TT Campus 数据看板</h1>
+                <div class="sub" id="updated-at">正在读取 Appwrite 后台数据...</div>
+            </div>
+            <div class="actions">
+                <button onclick="loadProfiles()">刷新</button>
+                <button class="primary" onclick="exportCsv()">导出 CSV</button>
+            </div>
+        </header>
+
+        <section class="stats">
+            <div class="stat"><div class="label">注册用户</div><div class="value" id="total-users">0</div></div>
+            <div class="stat"><div class="label">今日新增</div><div class="value" id="today-users">0</div></div>
+            <div class="stat"><div class="label">填写姓名</div><div class="value" id="named-users">0</div></div>
+            <div class="stat"><div class="label">邮箱验证码</div><div class="value" id="email-users">0</div></div>
+        </section>
+
+        <section class="grid">
+            <div class="panel">
+                <h2>邮箱域名分布</h2>
+                <div class="bars" id="domain-bars"></div>
+            </div>
+            <div class="panel">
+                <h2>用户资料明细</h2>
+                <div id="table-wrap"></div>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        let profileRows = [];
+
+        function formatDate(value) {
+            if (!value) return '-';
+            var date = new Date(value);
+            if (Number.isNaN(date.getTime())) return value;
+            return date.toLocaleString('zh-CN', { hour12: false });
+        }
+
+        function domainOf(email) {
+            return String(email || '').split('@')[1] || 'unknown';
+        }
+
+        function isToday(value) {
+            var date = new Date(value);
+            if (Number.isNaN(date.getTime())) return false;
+            var now = new Date();
+            return date.getFullYear() === now.getFullYear() &&
+                date.getMonth() === now.getMonth() &&
+                date.getDate() === now.getDate();
+        }
+
+        function renderStats(rows) {
+            document.getElementById('total-users').textContent = rows.length;
+            document.getElementById('today-users').textContent = rows.filter(function(row) { return isToday(row.created_at); }).length;
+            document.getElementById('named-users').textContent = rows.filter(function(row) { return row.name; }).length;
+            document.getElementById('email-users').textContent = rows.filter(function(row) { return row.email; }).length;
+        }
+
+        function renderDomains(rows) {
+            var counts = {};
+            rows.forEach(function(row) {
+                var domain = domainOf(row.email);
+                counts[domain] = (counts[domain] || 0) + 1;
+            });
+            var entries = Object.keys(counts).map(function(key) { return [key, counts[key]]; })
+                .sort(function(a, b) { return b[1] - a[1]; })
+                .slice(0, 6);
+            var max = entries.length ? entries[0][1] : 1;
+            var html = entries.map(function(entry) {
+                return '<div class="bar-row"><strong>' + entry[0] + '</strong><div class="bar"><span style="width:' + Math.max(8, entry[1] / max * 100) + '%"></span></div><b>' + entry[1] + '</b></div>';
+            }).join('');
+            document.getElementById('domain-bars').innerHTML = html || '<div class="empty">暂无数据</div>';
+        }
+
+        function renderTable(rows) {
+            if (!rows.length) {
+                document.getElementById('table-wrap').innerHTML = '<div class="empty">暂无用户数据</div>';
+                return;
+            }
+            document.getElementById('table-wrap').innerHTML = '<table><thead><tr><th>邮箱</th><th>姓名</th><th>学号</th><th>登录方式</th><th>创建时间</th></tr></thead><tbody>' +
+                rows.map(function(row) {
+                    return '<tr><td>' + (row.email || '-') + '</td><td>' + (row.name || '-') + '</td><td>' + (row.student_id || '-') + '</td><td><span class="pill">' + (row.auth_method || 'email_otp') + '</span></td><td>' + formatDate(row.created_at) + '</td></tr>';
+                }).join('') +
+                '</tbody></table>';
+        }
+
+        async function loadProfiles() {
+            try {
+                document.getElementById('updated-at').textContent = '正在读取 Appwrite 后台数据...';
+                var response = await fetch('/api/admin/profiles');
+                var data = await response.json();
+                if (!response.ok || data.ok === false) throw new Error(data.message || '读取失败');
+                profileRows = data.rows || [];
+                renderStats(profileRows);
+                renderDomains(profileRows);
+                renderTable(profileRows);
+                document.getElementById('updated-at').textContent = '最后刷新：' + new Date().toLocaleString('zh-CN', { hour12: false });
+            } catch (error) {
+                document.getElementById('updated-at').textContent = '读取失败';
+                document.getElementById('table-wrap').innerHTML = '<div class="error">' + error.message + '</div>';
+            }
+        }
+
+        function exportCsv() {
+            var headers = ['email', 'name', 'student_id', 'auth_method', 'created_at'];
+            var lines = [headers.join(',')].concat(profileRows.map(function(row) {
+                return headers.map(function(key) {
+                    return '"' + String(row[key] || '').replace(/"/g, '""') + '"';
+                }).join(',');
+            }));
+            var blob = new Blob([lines.join('\n')], { type: 'text/csv;charset=utf-8' });
+            var url = URL.createObjectURL(blob);
+            var a = document.createElement('a');
+            a.href = url;
+            a.download = 'tt-campus-profiles.csv';
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        loadProfiles();
+    </script>
+</body>
+</html>

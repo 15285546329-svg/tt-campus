@@ -111,7 +111,6 @@ function getProfileFromAppwriteUser(user, overrides = {}) {
         email: user.email || overrides.email || '',
         name: String(overrides.name || user.name || user.email || '').trim(),
         student_id: String(overrides.studentId || '').trim(),
-        phone: String(overrides.phone || '').trim(),
         auth_method: 'email_otp',
         created_at: now,
         updated_at: now
@@ -138,6 +137,14 @@ async function upsertAppwriteProfile(user, overrides = {}) {
 
 async function getAppwriteUser(userId) {
     return appwriteRequest(`/users/${encodeURIComponent(userId)}`, {
+        method: 'GET'
+    }, true);
+}
+
+async function listAppwriteProfiles() {
+    const config = ensureAppwriteConfigured(true);
+    const pathBase = `/tablesdb/${encodeURIComponent(config.databaseId)}/tables/${encodeURIComponent(config.profilesTableId)}/rows`;
+    return appwriteRequest(pathBase, {
         method: 'GET'
     }, true);
 }
@@ -613,13 +620,38 @@ async function handleAuthProfile(req, res) {
             userId,
             name: body.name,
             studentId: body.studentId,
-            phone: body.phone,
             email: user.email || body.email
         });
         sendJson(res, 200, {
             ok: true,
             user,
             profile
+        });
+    } catch (error) {
+        sendJson(res, 500, { ok: false, message: error.message });
+    }
+}
+
+async function handleAdminProfiles(req, res) {
+    try {
+        const data = await listAppwriteProfiles();
+        const rows = data.rows || data.documents || [];
+        sendJson(res, 200, {
+            ok: true,
+            total: data.total || rows.length,
+            rows: rows.map(row => {
+                const source = row.data || row;
+                return {
+                    id: row.$id || source.user_id || '',
+                    user_id: source.user_id || row.$id || '',
+                    email: source.email || '',
+                    name: source.name || '',
+                    student_id: source.student_id || '',
+                    auth_method: source.auth_method || '',
+                    created_at: source.created_at || row.$createdAt || '',
+                    updated_at: source.updated_at || row.$updatedAt || ''
+                };
+            })
         });
     } catch (error) {
         sendJson(res, 500, { ok: false, message: error.message });
@@ -804,6 +836,11 @@ const server = http.createServer(async (req, res) => {
 
     if (req.method === 'POST' && req.url === '/api/auth/profile') {
         await handleAuthProfile(req, res);
+        return;
+    }
+
+    if (req.method === 'GET' && req.url === '/api/admin/profiles') {
+        await handleAdminProfiles(req, res);
         return;
     }
 
