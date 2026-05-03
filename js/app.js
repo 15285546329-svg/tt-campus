@@ -1175,6 +1175,17 @@ async function handleLogin() {
     if (loginMode === 'student') {
         currentUser.studentId = document.getElementById('student-id').value.trim() || defaultUser.studentId;
         currentUser.authMethod = 'student';
+        try {
+            var studentResult = await postJson('/api/auth/student-login', {
+                studentId: currentUser.studentId,
+                name: currentUser.name
+            });
+            currentUser.appwriteUserId = studentResult.user && studentResult.user.$id ? studentResult.user.$id : 'student_' + currentUser.studentId;
+            currentUser.email = '';
+        } catch (error) {
+            alert(t('appwriteApiUnavailable') + '\n' + error.message);
+            return;
+        }
     } else {
         var emailLoggedIn = await handleEmailLogin();
         if (!emailLoggedIn) return;
