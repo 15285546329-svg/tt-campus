@@ -112,7 +112,7 @@ const DEFAULT_PAYMENT_QR = 'assets/merchant-payment-qr.jpg';
 const defaultAppData = JSON.parse(JSON.stringify(appData));
 const defaultUser = {
     name: 'Alex Chen',
-    studentId: '201234567',
+    studentId: '',
     email: '',
     appwriteUserId: '',
     defaultPickup: '1号楼自提柜',
@@ -1173,7 +1173,12 @@ function setupPaymentQrUpload() {
 // ===== 登录 =====
 async function handleLogin() {
     if (loginMode === 'student') {
-        currentUser.studentId = document.getElementById('student-id').value.trim() || defaultUser.studentId;
+        var typedStudentId = document.getElementById('student-id').value.trim();
+        if (!typedStudentId) {
+            alert('请先输入学号');
+            return;
+        }
+        currentUser.studentId = typedStudentId;
         currentUser.authMethod = 'student';
         try {
             var studentResult = await postJson('/api/auth/student-login', {
